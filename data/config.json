@@ -1,0 +1,12 @@
+{
+  "autoPost": false,
+  "platforms": {
+    "twitter": true,
+    "facebook": true,
+    "instagram": true,
+    "threads": true
+  },
+  "rssUrl": "https://thefrontfeed.com/feed",
+  "lastSeenArticleGuid": "",
+  "lastChecked": ""
+}
