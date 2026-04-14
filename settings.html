@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFF Auto Poster — Settings</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #243148;
+      --border: #334155;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --radius: 10px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; }
+    .header-logo .logo-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: var(--accent); color: #fff; }
+
+    /* ── Main ── */
+    .main { max-width: 680px; margin: 0 auto; padding: 28px 20px 80px; }
+    .page-title { font-size: 20px; font-weight: 700; margin-bottom: 6px; }
+    .page-subtitle { color: var(--text-muted); font-size: 13px; margin-bottom: 28px; }
+
+    /* ── Sections ── */
+    .settings-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .section-head {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .section-head-left { display: flex; align-items: center; gap: 10px; }
+    .section-icon { font-size: 18px; }
+    .section-name { font-weight: 700; font-size: 14px; }
+    .section-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .section-body { padding: 20px; }
+
+    /* ── Form fields ── */
+    .field { margin-bottom: 16px; }
+    .field:last-child { margin-bottom: 0; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+    }
+    .field-row { display: flex; gap: 8px; align-items: flex-end; }
+    .field-row .field { flex: 1; margin-bottom: 0; }
+    .input {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 9px 12px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .input:focus { outline: none; border-color: var(--accent); }
+    .input::placeholder { color: #4b6080; }
+    .input-password { font-family: monospace; letter-spacing: 0.05em; }
+    .input-hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; line-height: 1.5; }
+    .input-hint a { color: var(--accent); }
+
+    /* ── Secret row ── */
+    .secret-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .secret-row:last-child { margin-bottom: 0; }
+    .secret-row .input { flex: 1; }
+    .secret-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 100px;
+      white-space: nowrap;
+    }
+    .secret-status {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .secret-status-ok { background: rgba(34,197,94,0.2); color: var(--success); }
+    .secret-status-none { background: var(--surface2); color: var(--text-muted); }
+
+    /* ── Toggle switch ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .toggle-row:last-child { border-bottom: none; }
+    .toggle-info { flex: 1; }
+    .toggle-name { font-size: 13px; font-weight: 500; }
+    .toggle-desc { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+    .toggle {
+      position: relative;
+      width: 40px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--accent); border-color: var(--accent); }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+    /* ── Buttons ── */
+    .btn {
+      padding: 8px 18px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: var(--border); }
+    .btn-sm { padding: 6px 12px; font-size: 12px; }
+    .btn-success-outline { background: transparent; color: var(--success); border: 1px solid rgba(34,197,94,0.4); }
+    .btn-success-outline:hover:not(:disabled) { background: rgba(34,197,94,0.1); }
+
+    .section-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+    .save-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      display: none;
+    }
+    .save-status.ok { color: var(--success); display: inline; }
+    .save-status.err { color: var(--danger); display: inline; }
+
+    /* ── Info callout ── */
+    .callout {
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    .callout-info { background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.25); color: #93c5fd; }
+    .callout-warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.25); color: #fcd34d; }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+    .toast {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: slideIn 0.2s ease;
+      max-width: 340px;
+      box-shadow: var(--shadow);
+    }
+    @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .toast-success { background: #14532d; color: #86efac; border: 1px solid #166534; }
+    .toast-error { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .toast-info { background: #1e3a5f; color: #93c5fd; border: 1px solid #1e40af; }
+
+    /* ── Loading overlay for secret operations ── */
+    .saving-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 200;
+      align-items: center;
+      justify-content: center;
+    }
+    .saving-overlay.open { display: flex; }
+    .saving-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 32px;
+      text-align: center;
+    }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 12px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 600px) {
+      .header { padding: 0 14px; }
+      .main { padding: 16px 12px 80px; }
+      .secret-row { flex-wrap: wrap; }
+      .secret-label { min-width: 80px; }
+    }
+  </style>
+  <!-- libsodium for encrypting GitHub Secrets in the browser -->
+  <script src="https://cdn.jsdelivr.net/npm/libsodium-wrappers@0.7.13/dist/modules/libsodium-wrappers.min.js"></script>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-dot"></div>
+    TFF Auto Poster
+  </div>
+  <nav style="display:flex;gap:4px">
+    <a href="index.html" class="nav-link">Dashboard</a>
+    <span class="nav-link active">Settings</span>
+  </nav>
+</header>
+
+<main class="main">
+  <h1 class="page-title">Settings</h1>
+  <p class="page-subtitle">Configure your GitHub connection, API keys, and posting behaviour.</p>
+
+  <!-- ── 1. GitHub Connection ────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-github">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">🔗</span>
+        <div>
+          <div class="section-name">GitHub Connection</div>
+          <div class="section-desc">Required for the dashboard to read/write data and trigger workflows</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-info">
+        Your PAT is stored only in your browser (localStorage) — it is never sent anywhere except directly to the GitHub API over HTTPS.
+      </div>
+      <div class="field">
+        <label>GitHub Repository (owner/repo)</label>
+        <input class="input" id="gh-repo" placeholder="e.g. yourname/tff-auto-social" value="">
+        <div class="input-hint">The public GitHub repo where this app lives.</div>
+      </div>
+      <div class="field">
+        <label>Personal Access Token (PAT)</label>
+        <input class="input input-password" id="gh-pat" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+        <div class="input-hint">
+          Needs <strong>repo</strong> + <strong>workflow</strong> scopes.
+          <a href="https://github.com/settings/tokens/new?scopes=repo,workflow&description=TFF+Auto+Poster" target="_blank">Create one here →</a>
+        </div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="github-status"></span>
+      <button class="btn btn-secondary btn-sm" onclick="testGitHubConnection()">Test Connection</button>
+      <button class="btn btn-primary" onclick="saveGitHubCreds()">Save</button>
+    </div>
+  </div>
+
+  <!-- ── 2. Behaviour ───────────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-behaviour">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">⚙️</span>
+        <div>
+          <div class="section-name">Posting Behaviour</div>
+          <div class="section-desc">Control how new articles are handled when detected</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">Auto-post new articles</div>
+          <div class="toggle-desc">When ON, articles are posted automatically without needing your approval in the dashboard</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-autopost" onchange="onBehaviourChange()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div style="margin-top:14px;font-size:12px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px;">
+        Enabled Platforms
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">𝕏 Twitter / X</div>
+          <div class="toggle-desc">Requires Twitter API credentials below</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-twitter" onchange="onBehaviourChange()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">f Facebook</div>
+          <div class="toggle-desc">Posts to your Facebook Page</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-facebook" onchange="onBehaviourChange()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">◉ Instagram</div>
+          <div class="toggle-desc">Requires a Business or Creator account</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-instagram" onchange="onBehaviourChange()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <div class="toggle-name">@ Threads</div>
+          <div class="toggle-desc">Uses the official Threads API via Meta</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="toggle-threads" onchange="onBehaviourChange()">
+          <div class="toggle-track"></div>
+        </label>
+      </div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="behaviour-status"></span>
+      <button class="btn btn-primary" onclick="saveBehaviour()">Save Behaviour</button>
+    </div>
+  </div>
+
+  <!-- ── 3. Gemini API Keys ─────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-gemini">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">✨</span>
+        <div>
+          <div class="section-name">Gemini API Keys (Caption Generator)</div>
+          <div class="section-desc">Up to 5 keys — the script rotates to the next key when one hits its rate limit</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-info">
+        Keys are saved as encrypted GitHub Secrets — they are never stored in your code or this browser.
+        Get free Gemini API keys at <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio →</a>
+      </div>
+      <div id="gemini-rows">
+        <!-- Rendered by JS -->
+      </div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="gemini-status"></span>
+      <button class="btn btn-primary" onclick="saveGeminiKeys()">Save Keys</button>
+    </div>
+  </div>
+
+  <!-- ── 4. Twitter / X ─────────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-twitter">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">𝕏</span>
+        <div>
+          <div class="section-name">Twitter / X API</div>
+          <div class="section-desc">OAuth 1.0a — requires API Key, Secret, Access Token, and Access Secret</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-warning">
+        As of Feb 2026, Twitter no longer has a free tier. Posting requires a paid API plan (~$100/month Basic) or pay-per-use.
+        <a href="https://developer.x.com/en/portal/dashboard" target="_blank">Twitter Developer Portal →</a>
+      </div>
+      <div id="twitter-rows"></div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="twitter-status"></span>
+      <button class="btn btn-primary" onclick="saveSecretGroup('twitter')">Save Twitter Keys</button>
+    </div>
+  </div>
+
+  <!-- ── 5. Facebook ────────────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-facebook">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">f</span>
+        <div>
+          <div class="section-name">Facebook Page API</div>
+          <div class="section-desc">Meta Graph API — posts to your Facebook Page</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-info">
+        You need a Facebook App with <strong>pages_manage_posts</strong> permission and a long-lived Page Access Token.
+        <a href="https://developers.facebook.com/tools/explorer/" target="_blank">Graph API Explorer →</a>
+      </div>
+      <div id="facebook-rows"></div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="facebook-status"></span>
+      <button class="btn btn-primary" onclick="saveSecretGroup('facebook')">Save Facebook Keys</button>
+    </div>
+  </div>
+
+  <!-- ── 6. Instagram ───────────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-instagram">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">◉</span>
+        <div>
+          <div class="section-name">Instagram Business API</div>
+          <div class="section-desc">Meta Graph API — requires a Business or Creator account</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-info">
+        Your Instagram must be a Business or Creator account connected to a Facebook Page.
+        Use the same Facebook App as above with <strong>instagram_basic</strong> + <strong>instagram_content_publish</strong> permissions.
+      </div>
+      <div id="instagram-rows"></div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="instagram-status"></span>
+      <button class="btn btn-primary" onclick="saveSecretGroup('instagram')">Save Instagram Keys</button>
+    </div>
+  </div>
+
+  <!-- ── 7. Threads ─────────────────────────────────────────────────────── -->
+  <div class="settings-section" id="section-threads">
+    <div class="section-head">
+      <div class="section-head-left">
+        <span class="section-icon">@</span>
+        <div>
+          <div class="section-name">Threads API</div>
+          <div class="section-desc">Official Meta Threads API (graph.threads.net)</div>
+        </div>
+      </div>
+    </div>
+    <div class="section-body">
+      <div class="callout callout-info">
+        Register a Threads app at <a href="https://developers.facebook.com/" target="_blank">Meta for Developers</a>.
+        You need <strong>threads_basic</strong> + <strong>threads_content_publish</strong> permissions.
+        Get your User ID from the Threads API after OAuth.
+      </div>
+      <div id="threads-rows"></div>
+    </div>
+    <div class="section-footer">
+      <span class="save-status" id="threads-status"></span>
+      <button class="btn btn-primary" onclick="saveSecretGroup('threads')">Save Threads Keys</button>
+    </div>
+  </div>
+
+</main>
+
+<div id="toast-container"></div>
+
+<div class="saving-overlay" id="saving-overlay">
+  <div class="saving-card">
+    <div class="spinner"></div>
+    <div id="saving-message" style="font-size:13px;color:var(--text-muted)">Encrypting and saving secrets...</div>
+  </div>
+</div>
+
+<script>
+// ─── Secret field definitions ─────────────────────────────────────────────────
+const SECRET_GROUPS = {
+  gemini: [
+    { id: 'GEMINI_KEY_1', label: 'Key 1', placeholder: 'AIzaSy...' },
+    { id: 'GEMINI_KEY_2', label: 'Key 2 (fallback)', placeholder: 'AIzaSy...' },
+    { id: 'GEMINI_KEY_3', label: 'Key 3 (fallback)', placeholder: 'AIzaSy...' },
+    { id: 'GEMINI_KEY_4', label: 'Key 4 (fallback)', placeholder: 'AIzaSy...' },
+    { id: 'GEMINI_KEY_5', label: 'Key 5 (fallback)', placeholder: 'AIzaSy...' },
+  ],
+  twitter: [
+    { id: 'TWITTER_API_KEY', label: 'API Key', placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxx' },
+    { id: 'TWITTER_API_SECRET', label: 'API Secret', placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' },
+    { id: 'TWITTER_ACCESS_TOKEN', label: 'Access Token', placeholder: '1234567890-xxxxxxxxxxxxxxxxxxxxxxxxxx' },
+    { id: 'TWITTER_ACCESS_TOKEN_SECRET', label: 'Access Token Secret', placeholder: 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' },
+  ],
+  facebook: [
+    { id: 'FACEBOOK_PAGE_ID', label: 'Page ID', placeholder: '123456789012345' },
+    { id: 'FACEBOOK_PAGE_ACCESS_TOKEN', label: 'Page Access Token', placeholder: 'EAAxxxxxxxxxx...' },
+  ],
+  instagram: [
+    { id: 'INSTAGRAM_BUSINESS_ACCOUNT_ID', label: 'Business Account ID', placeholder: '123456789012345' },
+    { id: 'INSTAGRAM_ACCESS_TOKEN', label: 'Access Token', placeholder: 'EAAxxxxxxxxxx...' },
+  ],
+  threads: [
+    { id: 'THREADS_USER_ID', label: 'User ID', placeholder: '123456789012345' },
+    { id: 'THREADS_ACCESS_TOKEN', label: 'Access Token', placeholder: 'THxxxxxxxxxx...' },
+  ],
+};
+
+// Track which secrets are already set (from GitHub API list)
+const setSecrets = new Set();
+
+// ─── Credentials ──────────────────────────────────────────────────────────────
+function getCreds() {
+  const pat = localStorage.getItem('gh_pat') || '';
+  const full = localStorage.getItem('gh_repo') || '';
+  const [owner, repo] = full.includes('/') ? full.split('/') : ['', ''];
+  return { pat, owner, repo, full };
+}
+
+// ─── Render secret input rows ─────────────────────────────────────────────────
+function renderSecretRows(groupId) {
+  const container = document.getElementById(`${groupId}-rows`);
+  if (!container) return;
+  const fields = SECRET_GROUPS[groupId] || [];
+  container.innerHTML = fields.map(f => {
+    const isSet = setSecrets.has(f.id);
+    return `
+      <div class="secret-row">
+        <span class="secret-label">${f.label}</span>
+        <input class="input input-password" id="secret-${f.id}" type="password"
+          placeholder="${isSet ? '••••••••  (already set — leave blank to keep)' : f.placeholder}"
+          autocomplete="off">
+        <div class="secret-status ${isSet ? 'secret-status-ok' : 'secret-status-none'}"
+             title="${isSet ? 'Secret is set in GitHub' : 'Not set yet'}">
+          ${isSet ? '✓' : '–'}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderAllSecretRows() {
+  Object.keys(SECRET_GROUPS).forEach(g => renderSecretRows(g));
+}
+
+// ─── Load existing secret names from GitHub ───────────────────────────────────
+async function loadExistingSecrets() {
+  const { pat, owner, repo } = getCreds();
+  if (!pat || !owner || !repo) return;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/actions/secrets?per_page=100`,
+      {
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      }
+    );
+    if (!res.ok) return;
+    const data = await res.json();
+    setSecrets.clear();
+    (data.secrets || []).forEach(s => setSecrets.add(s.name));
+    renderAllSecretRows();
+  } catch (err) {
+    console.warn('Could not load secrets list:', err.message);
+  }
+}
+
+// ─── Load config from GitHub ──────────────────────────────────────────────────
+async function loadConfig() {
+  const { pat, owner, repo } = getCreds();
+  if (!pat || !owner || !repo) return;
+  try {
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/data/config.json`,
+      {
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      }
+    );
+    if (!res.ok) return;
+    const file = await res.json();
+    const config = JSON.parse(atob(file.content.replace(/\n/g, '')));
+    document.getElementById('toggle-autopost').checked = !!config.autoPost;
+    document.getElementById('toggle-twitter').checked = config.platforms?.twitter !== false;
+    document.getElementById('toggle-facebook').checked = config.platforms?.facebook !== false;
+    document.getElementById('toggle-instagram').checked = config.platforms?.instagram !== false;
+    document.getElementById('toggle-threads').checked = config.platforms?.threads !== false;
+    // Store sha for update
+    window._configSha = file.sha;
+    window._config = config;
+  } catch (err) {
+    console.warn('Could not load config.json:', err.message);
+  }
+}
+
+// ─── GitHub Connection ────────────────────────────────────────────────────────
+function saveGitHubCreds() {
+  const pat = document.getElementById('gh-pat').value.trim();
+  const repo = document.getElementById('gh-repo').value.trim();
+
+  if (!pat) { toast('Please enter a Personal Access Token.', 'error'); return; }
+  if (!repo || !repo.includes('/')) { toast('Repository must be in "owner/repo" format.', 'error'); return; }
+
+  localStorage.setItem('gh_pat', pat);
+  localStorage.setItem('gh_repo', repo);
+
+  setStatus('github', '✓ Saved', 'ok');
+  toast('GitHub credentials saved!', 'success');
+
+  // Reload remote data with new creds
+  loadConfig();
+  loadExistingSecrets();
+}
+
+async function testGitHubConnection() {
+  const { pat, owner, repo } = getCreds();
+  if (!pat || !owner || !repo) {
+    toast('Save your credentials first.', 'error'); return;
+  }
+  try {
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: {
+        Authorization: `Bearer ${pat}`,
+        Accept: 'application/vnd.github+json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      toast(`Connected to ${data.full_name} ✓`, 'success');
+      setStatus('github', '✓ Connected', 'ok');
+    } else {
+      const err = await res.json();
+      toast(`Connection failed: ${err.message}`, 'error');
+      setStatus('github', '✗ Failed', 'err');
+    }
+  } catch (err) {
+    toast(`Connection error: ${err.message}`, 'error');
+  }
+}
+
+// ─── Behaviour ────────────────────────────────────────────────────────────────
+function onBehaviourChange() { /* live — saved on button click */ }
+
+async function saveBehaviour() {
+  const { pat, owner, repo } = getCreds();
+  if (!pat || !owner || !repo) { toast('Configure GitHub connection first.', 'error'); return; }
+
+  const config = window._config || {};
+  config.autoPost = document.getElementById('toggle-autopost').checked;
+  config.platforms = {
+    twitter: document.getElementById('toggle-twitter').checked,
+    facebook: document.getElementById('toggle-facebook').checked,
+    instagram: document.getElementById('toggle-instagram').checked,
+    threads: document.getElementById('toggle-threads').checked,
+  };
+
+  try {
+    const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2) + '\n')));
+    const res = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/contents/data/config.json`,
+      {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: 'application/vnd.github+json',
+          'Content-Type': 'application/json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+        body: JSON.stringify({
+          message: 'chore: update behaviour settings',
+          content: encoded,
+          sha: window._configSha,
+        }),
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.message);
+    }
+    const data = await res.json();
+    window._configSha = data.content.sha;
+    window._config = config;
+    setStatus('behaviour', '✓ Saved', 'ok');
+    toast('Behaviour settings saved!', 'success');
+  } catch (err) {
+    setStatus('behaviour', '✗ Error', 'err');
+    toast(`Save failed: ${err.message}`, 'error');
+  }
+}
+
+// ─── Encrypt & save GitHub Secrets ───────────────────────────────────────────
+async function encryptSecret(value, publicKey) {
+  await sodium.ready;
+  const binaryKey = sodium.from_base64(publicKey, sodium.base64_variants.ORIGINAL);
+  const binaryValue = sodium.from_string(value);
+  const encryptedBytes = sodium.crypto_box_seal(binaryValue, binaryKey);
+  return sodium.to_base64(encryptedBytes, sodium.base64_variants.ORIGINAL);
+}
+
+async function setGitHubSecret(secretName, secretValue, pat, owner, repo, keyId, publicKey) {
+  const encryptedValue = await encryptSecret(secretValue, publicKey);
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/actions/secrets/${secretName}`,
+    {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${pat}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({ encrypted_value: encryptedValue, key_id: keyId }),
+    }
+  );
+  if (!res.ok && res.status !== 204) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `HTTP ${res.status}`);
+  }
+}
+
+async function saveSecretGroup(groupId) {
+  const { pat, owner, repo } = getCreds();
+  if (!pat || !owner || !repo) { toast('Configure GitHub connection first.', 'error'); return; }
+
+  const fields = groupId === 'gemini' ? SECRET_GROUPS.gemini : SECRET_GROUPS[groupId];
+  const toSave = [];
+
+  for (const f of fields) {
+    const input = document.getElementById(`secret-${f.id}`);
+    const val = input ? input.value.trim() : '';
+    if (val) toSave.push({ name: f.id, value: val });
+  }
+
+  if (toSave.length === 0) {
+    toast('No new values entered — nothing to save.', 'info');
+    return;
+  }
+
+  showSaving(`Saving ${toSave.length} secret(s)...`);
+
+  try {
+    // Get repo public key (needed for encryption)
+    const keyRes = await fetch(
+      `https://api.github.com/repos/${owner}/${repo}/actions/public-key`,
+      {
+        headers: {
+          Authorization: `Bearer ${pat}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+        },
+      }
+    );
+    if (!keyRes.ok) {
+      const err = await keyRes.json();
+      throw new Error(err.message || 'Failed to fetch repo public key');
+    }
+    const { key_id, key } = await keyRes.json();
+
+    // Encrypt and save each secret
+    for (const { name, value } of toSave) {
+      updateSavingMessage(`Saving ${name}...`);
+      await setGitHubSecret(name, value, pat, owner, repo, key_id, key);
+      setSecrets.add(name);
+      // Clear the input after saving
+      const input = document.getElementById(`secret-${name}`);
+      if (input) input.value = '';
+    }
+
+    hideSaving();
+    renderAllSecretRows();
+    setStatus(groupId, `✓ ${toSave.length} secret(s) saved`, 'ok');
+    toast(`${toSave.length} secret(s) saved successfully!`, 'success');
+
+  } catch (err) {
+    hideSaving();
+    setStatus(groupId, '✗ Error', 'err');
+    toast(`Save failed: ${err.message}`, 'error');
+  }
+}
+
+// Convenience wrapper for gemini group
+function saveGeminiKeys() { saveSecretGroup('gemini'); }
+
+// ─── UI helpers ───────────────────────────────────────────────────────────────
+function setStatus(sectionId, msg, type) {
+  const el = document.getElementById(`${sectionId}-status`);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = `save-status ${type}`;
+  setTimeout(() => { el.textContent = ''; el.className = 'save-status'; }, 5000);
+}
+
+function showSaving(msg) {
+  document.getElementById('saving-message').textContent = msg;
+  document.getElementById('saving-overlay').classList.add('open');
+}
+function updateSavingMessage(msg) {
+  document.getElementById('saving-message').textContent = msg;
+}
+function hideSaving() {
+  document.getElementById('saving-overlay').classList.remove('open');
+}
+
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 4500);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const { pat, full } = getCreds();
+  document.getElementById('gh-pat').value = pat || '';
+  document.getElementById('gh-repo').value = full || '';
+
+  // Render all secret input rows (initially without "set" indicators)
+  renderAllSecretRows();
+
+  // If we have creds, load live data from GitHub
+  if (pat && full.includes('/')) {
+    loadConfig();
+    loadExistingSecrets();
+  }
+})();
+</script>
+</body>
+</html>

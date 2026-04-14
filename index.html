@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TFF Auto Poster — Dashboard</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface2: #243148;
+      --border: #334155;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --radius: 10px;
+      --shadow: 0 4px 24px rgba(0,0,0,0.35);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 24px;
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 16px;
+    }
+    .header-logo .logo-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+    .header-nav { display: flex; gap: 4px; align-items: center; }
+    .nav-link {
+      padding: 6px 14px;
+      border-radius: 6px;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+      cursor: pointer;
+      border: none;
+      background: none;
+    }
+    .nav-link:hover { background: var(--surface2); color: var(--text); }
+    .nav-link.active { background: var(--accent); color: #fff; }
+    .header-actions { display: flex; gap: 8px; align-items: center; }
+
+    /* ── Status bar ── */
+    .status-bar {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+      font-size: 11px;
+    }
+    .pill-autopost-on { background: rgba(34,197,94,0.15); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
+    .pill-autopost-off { background: rgba(245,158,11,0.12); color: var(--warning); border: 1px solid rgba(245,158,11,0.25); }
+    .pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+    /* ── Main layout ── */
+    .main { max-width: 900px; margin: 0 auto; padding: 28px 20px 60px; }
+
+    /* ── Section headers ── */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .section-title { font-size: 15px; font-weight: 700; color: var(--text); }
+    .section-count {
+      background: var(--surface2);
+      color: var(--text-muted);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 16px;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .card:hover { border-color: #4b6080; }
+    .card-top {
+      display: flex;
+      gap: 14px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .card-image {
+      width: 100px;
+      height: 70px;
+      object-fit: cover;
+      border-radius: 6px;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+    .card-image-placeholder {
+      width: 100px;
+      height: 70px;
+      border-radius: 6px;
+      background: var(--surface2);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 22px;
+    }
+    .card-meta { flex: 1; min-width: 0; }
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.4;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card-url { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+    .card-time { font-size: 11px; color: var(--text-muted); }
+    .card-status-row { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+    /* ── Status badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-pending { background: rgba(59,130,246,0.15); color: #93c5fd; }
+    .badge-approved { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .badge-posting { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+    .badge-posted { background: rgba(34,197,94,0.15); color: #86efac; }
+    .badge-failed { background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .badge-scheduled { background: rgba(20,184,166,0.15); color: #5eead4; }
+    .badge-discarded { background: rgba(100,116,139,0.15); color: var(--text-muted); }
+
+    /* ── Platform tabs ── */
+    .caption-area { padding: 14px 16px 0; }
+    .platform-tabs { display: flex; gap: 4px; margin-bottom: 10px; flex-wrap: wrap; }
+    .tab-btn {
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: var(--surface2); color: var(--text); }
+    .tab-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tab-btn.tab-disabled { opacity: 0.45; }
+
+    /* ── Caption textarea ── */
+    .caption-box {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      font-size: 13px;
+      line-height: 1.55;
+      padding: 10px 12px;
+      resize: vertical;
+      min-height: 90px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .caption-box:focus { outline: none; border-color: var(--accent); }
+    .char-count { text-align: right; font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+    .char-count.over { color: var(--danger); }
+
+    /* ── Platform toggles ── */
+    .platform-toggles {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+    }
+    .platform-toggle-label {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.15s;
+    }
+    .platform-toggle-label input[type="checkbox"] { accent-color: var(--accent); cursor: pointer; }
+    .platform-toggle-label:has(input:checked) { color: var(--text); }
+
+    /* ── Card actions ── */
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+    .btn {
+      padding: 7px 16px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-primary:hover:not(:disabled) { background: var(--accent-hover); }
+    .btn-success { background: rgba(34,197,94,0.2); color: var(--success); border: 1px solid rgba(34,197,94,0.35); }
+    .btn-success:hover:not(:disabled) { background: rgba(34,197,94,0.3); }
+    .btn-danger { background: rgba(239,68,68,0.15); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
+    .btn-danger:hover:not(:disabled) { background: rgba(239,68,68,0.25); }
+    .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: var(--border); }
+    .btn-sm { padding: 4px 10px; font-size: 12px; }
+
+    /* ── Empty/loading states ── */
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text-muted);
+    }
+    .empty-state .emoji { font-size: 36px; margin-bottom: 12px; }
+    .empty-state h3 { font-size: 15px; margin-bottom: 6px; color: var(--text); }
+    .spinner {
+      width: 28px; height: 28px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── History list ── */
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .history-thumb {
+      width: 52px; height: 38px;
+      border-radius: 4px;
+      object-fit: cover;
+      background: var(--surface2);
+      flex-shrink: 0;
+    }
+    .history-info { flex: 1; min-width: 0; }
+    .history-title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .history-meta { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+    .history-results { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+    .result-chip {
+      font-size: 10px;
+      padding: 1px 7px;
+      border-radius: 3px;
+      font-weight: 600;
+    }
+    .result-ok { background: rgba(34,197,94,0.15); color: #86efac; }
+    .result-fail { background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .result-skip { background: rgba(100,116,139,0.12); color: var(--text-muted); }
+
+    /* ── Setup banner ── */
+    .setup-banner {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    .setup-banner h3 { margin-bottom: 8px; }
+    .setup-banner p { color: var(--text-muted); margin-bottom: 14px; font-size: 13px; }
+
+    /* ── Toast ── */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 9999;
+    }
+    .toast {
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      animation: slideIn 0.2s ease;
+      max-width: 320px;
+      box-shadow: var(--shadow);
+    }
+    @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .toast-success { background: #14532d; color: #86efac; border: 1px solid #166534; }
+    .toast-error { background: #450a0a; color: #fca5a5; border: 1px solid #7f1d1d; }
+    .toast-info { background: #1e3a5f; color: #93c5fd; border: 1px solid #1e40af; }
+
+    /* ── Schedule modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 500;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      width: 320px;
+      box-shadow: var(--shadow);
+    }
+    .modal h3 { margin-bottom: 14px; font-size: 15px; }
+    .modal label { display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
+    .modal input[type="datetime-local"] {
+      width: 100%;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+
+    /* ── Refresh bar ── */
+    .refresh-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .refresh-bar button { font-size: 12px; }
+
+    /* ── Section separator ── */
+    .section-sep { border: none; border-top: 1px solid var(--border); margin: 32px 0; }
+
+    @media (max-width: 600px) {
+      .header { padding: 0 14px; }
+      .main { padding: 16px 12px 60px; }
+      .card-top { flex-direction: column; }
+      .card-image, .card-image-placeholder { width: 100%; height: 140px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<header class="header">
+  <div class="header-logo">
+    <div class="logo-dot"></div>
+    TFF Auto Poster
+  </div>
+  <nav class="header-nav">
+    <span class="nav-link active">Dashboard</span>
+    <a href="settings.html" class="nav-link">Settings</a>
+  </nav>
+  <div class="header-actions">
+    <button class="btn btn-secondary btn-sm" onclick="loadAll()" title="Refresh data">&#8635; Refresh</button>
+  </div>
+</header>
+
+<!-- Status bar -->
+<div class="status-bar" id="status-bar">
+  <div id="autopost-pill" class="status-pill pill-autopost-off">
+    <div class="pill-dot"></div> Loading...
+  </div>
+  <span id="status-counts"></span>
+  <span id="status-lastcheck"></span>
+</div>
+
+<!-- Main content -->
+<main class="main">
+
+  <!-- Setup banner (shown when not configured) -->
+  <div class="setup-banner" id="setup-banner" style="display:none">
+    <h3>Connect to GitHub first</h3>
+    <p>Enter your GitHub Personal Access Token and repository name in Settings to get started.</p>
+    <a href="settings.html" class="btn btn-primary">Go to Settings</a>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-state" style="display:none">
+    <div class="empty-state">
+      <div class="spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+  </div>
+
+  <!-- Pending section -->
+  <section id="pending-section" style="display:none">
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="section-title">Pending Posts</span>
+        <span class="section-count" id="pending-count">0</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" id="auto-post-toggle-btn" onclick="toggleAutoPost()">
+        Toggle Auto-post
+      </button>
+    </div>
+    <div id="pending-list"></div>
+  </section>
+
+  <hr class="section-sep" id="history-sep" style="display:none">
+
+  <!-- History section -->
+  <section id="history-section" style="display:none">
+    <div class="section-header">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="section-title">Post History</span>
+        <span class="section-count" id="history-count">0</span>
+      </div>
+    </div>
+    <div id="history-list"></div>
+  </section>
+
+</main>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<!-- Schedule modal -->
+<div class="modal-overlay" id="schedule-modal">
+  <div class="modal">
+    <h3>Schedule Post</h3>
+    <label>Post at this date & time (local time):</label>
+    <input type="datetime-local" id="schedule-input">
+    <div class="modal-actions">
+      <button class="btn btn-secondary" onclick="closeScheduleModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="confirmSchedule()">Schedule</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let pat, owner, repo;
+let pendingData = [];
+let postedData = [];
+let configData = {};
+let pendingSha = null, postedSha = null, configSha = null;
+let activeTabs = {};       // articleId -> platform
+let scheduleTargetId = null;
+
+const PLATFORMS = ['twitter', 'facebook', 'instagram', 'threads'];
+const PLATFORM_ICONS = { twitter: '𝕏', facebook: 'f', instagram: '◉', threads: '@' };
+const CHAR_LIMITS = { twitter: 280, facebook: 2000, instagram: 2200, threads: 500 };
+
+// ─── Credentials ──────────────────────────────────────────────────────────────
+function loadCreds() {
+  pat = localStorage.getItem('gh_pat') || '';
+  const full = localStorage.getItem('gh_repo') || '';
+  if (full.includes('/')) {
+    [owner, repo] = full.split('/');
+  }
+  return !!(pat && owner && repo);
+}
+
+// ─── GitHub API ───────────────────────────────────────────────────────────────
+async function ghFetch(path, opts = {}) {
+  const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+    ...opts,
+    headers: {
+      Authorization: `Bearer ${pat}`,
+      Accept: 'application/vnd.github+json',
+      'X-GitHub-Api-Version': '2022-11-28',
+      ...(opts.headers || {}),
+    },
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `GitHub API error ${res.status}`);
+  }
+  return res.json();
+}
+
+async function readFile(path) {
+  const data = await ghFetch(path);
+  const content = JSON.parse(atob(data.content.replace(/\n/g, '')));
+  return { content, sha: data.sha };
+}
+
+async function writeFile(path, content, sha, message) {
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2) + '\n')));
+  const data = await ghFetch(path, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ message, content: encoded, sha }),
+  });
+  return data.content.sha;
+}
+
+async function dispatchWorkflow(workflowFile, inputs) {
+  const res = await fetch(
+    `https://api.github.com/repos/${owner}/${repo}/actions/workflows/${workflowFile}/dispatches`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${pat}`,
+        Accept: 'application/vnd.github+json',
+        'Content-Type': 'application/json',
+        'X-GitHub-Api-Version': '2022-11-28',
+      },
+      body: JSON.stringify({ ref: 'main', inputs }),
+    }
+  );
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || `Workflow dispatch failed: ${res.status}`);
+  }
+}
+
+// ─── Load all data ────────────────────────────────────────────────────────────
+async function loadAll() {
+  if (!loadCreds()) {
+    document.getElementById('setup-banner').style.display = '';
+    document.getElementById('loading-state').style.display = 'none';
+    document.getElementById('pending-section').style.display = 'none';
+    document.getElementById('history-section').style.display = 'none';
+    document.getElementById('history-sep').style.display = 'none';
+    return;
+  }
+
+  document.getElementById('setup-banner').style.display = 'none';
+  document.getElementById('loading-state').style.display = '';
+
+  try {
+    const [pRes, hRes, cRes] = await Promise.all([
+      readFile('data/pending.json'),
+      readFile('data/posted.json'),
+      readFile('data/config.json'),
+    ]);
+    pendingData = pRes.content || [];
+    pendingSha = pRes.sha;
+    postedData = hRes.content || [];
+    postedSha = hRes.sha;
+    configData = cRes.content || {};
+    configSha = cRes.sha;
+
+    renderAll();
+  } catch (err) {
+    document.getElementById('loading-state').style.display = 'none';
+    toast(`Failed to load data: ${err.message}`, 'error');
+  }
+}
+
+// ─── Render everything ────────────────────────────────────────────────────────
+function renderAll() {
+  document.getElementById('loading-state').style.display = 'none';
+  updateStatusBar();
+  renderPending();
+  renderHistory();
+}
+
+function updateStatusBar() {
+  const autoPost = configData.autoPost;
+  const pill = document.getElementById('autopost-pill');
+  pill.className = `status-pill ${autoPost ? 'pill-autopost-on' : 'pill-autopost-off'}`;
+  pill.innerHTML = `<div class="pill-dot"></div> Auto-post: ${autoPost ? 'ON' : 'OFF'}`;
+
+  const pending = pendingData.filter(a => a.status === 'pending' || a.status === 'scheduled').length;
+  document.getElementById('status-counts').textContent = `${pending} pending · ${postedData.length} posted`;
+
+  const btn = document.getElementById('auto-post-toggle-btn');
+  if (btn) btn.textContent = autoPost ? 'Turn Off Auto-post' : 'Turn On Auto-post';
+
+  if (configData.lastChecked) {
+    const ago = timeAgo(configData.lastChecked);
+    document.getElementById('status-lastcheck').textContent = `Last checked: ${ago}`;
+  }
+}
+
+function renderPending() {
+  const section = document.getElementById('pending-section');
+  const list = document.getElementById('pending-list');
+  const count = document.getElementById('pending-count');
+
+  const items = pendingData.filter(a => ['pending','scheduled','approved','posting','failed'].includes(a.status));
+  count.textContent = items.length;
+  section.style.display = '';
+
+  if (items.length === 0) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="emoji">✓</div>
+        <h3>All clear!</h3>
+        <p>No articles waiting for review. New articles will appear here automatically when detected.</p>
+      </div>`;
+    return;
+  }
+
+  list.innerHTML = items.map(a => renderCard(a)).join('');
+}
+
+function renderCard(article) {
+  const id = article.id;
+  const tab = activeTabs[id] || (activeTabs[id] = 'twitter');
+  const imageHtml = article.imageUrl
+    ? `<img class="card-image" src="${esc(article.imageUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">`
+    : `<div class="card-image-placeholder">📰</div>`;
+
+  const tabsHtml = PLATFORMS.map(p => {
+    const enabled = article.platforms?.[p] !== false;
+    return `<button class="tab-btn ${p === tab ? 'active' : ''} ${!enabled ? 'tab-disabled' : ''}"
+      onclick="switchTab('${escId(id)}','${p}')">${PLATFORM_ICONS[p]} ${capitalize(p)}</button>`;
+  }).join('');
+
+  const textareasHtml = PLATFORMS.map(p => {
+    const text = article.captions?.[p] || '';
+    const limit = CHAR_LIMITS[p];
+    const over = text.length > limit;
+    return `
+      <div data-panel="${p}" style="display:${p === tab ? 'block' : 'none'}">
+        <textarea class="caption-box" data-caption="${p}"
+          oninput="onCaptionInput('${escId(id)}','${p}',this)"
+          placeholder="Caption for ${capitalize(p)}...">${esc(text)}</textarea>
+        <div class="char-count ${over ? 'over' : ''}" id="cc-${escId(id)}-${p}">${text.length}/${limit}</div>
+      </div>`;
+  }).join('');
+
+  const platformTogglesHtml = PLATFORMS.map(p => {
+    const enabled = article.platforms?.[p] !== false;
+    return `
+      <label class="platform-toggle-label">
+        <input type="checkbox" data-platform="${p}" ${enabled ? 'checked' : ''}
+          onchange="onPlatformToggle('${escId(id)}','${p}',this.checked)">
+        ${PLATFORM_ICONS[p]} ${capitalize(p)}
+      </label>`;
+  }).join('');
+
+  const isPosting = article.status === 'posting' || article.status === 'approved';
+  const isScheduled = article.status === 'scheduled';
+
+  const statusBadge = `<span class="badge badge-${article.status}">${article.status}${isScheduled && article.scheduledAt ? ' — ' + formatDateTime(article.scheduledAt) : ''}</span>`;
+
+  return `
+    <div class="card" data-card="${escId(id)}">
+      <div class="card-top">
+        ${imageHtml}
+        <div class="card-meta">
+          <div class="card-title" title="${esc(article.title)}">${esc(article.title)}</div>
+          <div class="card-url"><a href="${esc(article.url)}" target="_blank">${esc(article.url.replace('https://', ''))}</a></div>
+          <div class="card-time">${timeAgo(article.publishedAt)}</div>
+          <div class="card-status-row">${statusBadge}</div>
+        </div>
+      </div>
+
+      <div class="caption-area">
+        <div class="platform-tabs">${tabsHtml}</div>
+        ${textareasHtml}
+      </div>
+
+      <div class="platform-toggles">${platformTogglesHtml}</div>
+
+      <div class="card-actions">
+        <button class="btn btn-success" onclick="approveArticle('${escId(id)}')" ${isPosting ? 'disabled' : ''}>
+          ✓ ${isPosting ? 'Posting...' : 'Approve & Post'}
+        </button>
+        <button class="btn btn-secondary" onclick="openScheduleModal('${escId(id)}')">
+          ⏰ ${isScheduled ? 'Reschedule' : 'Schedule'}
+        </button>
+        <button class="btn btn-danger" onclick="discardArticle('${escId(id)}')" ${isPosting ? 'disabled' : ''}>
+          ✗ Discard
+        </button>
+      </div>
+    </div>`;
+}
+
+function renderHistory() {
+  const section = document.getElementById('history-section');
+  const sep = document.getElementById('history-sep');
+  const list = document.getElementById('history-list');
+  const count = document.getElementById('history-count');
+
+  count.textContent = postedData.length;
+  section.style.display = '';
+  sep.style.display = '';
+
+  if (postedData.length === 0) {
+    list.innerHTML = `<div class="empty-state"><p>No posts yet.</p></div>`;
+    return;
+  }
+
+  const items = postedData.slice(0, 20);
+  list.innerHTML = items.map(a => {
+    const results = a.postResults || {};
+    const chips = Object.entries(results).map(([p, r]) => {
+      const cls = r.skipped ? 'result-skip' : r.success ? 'result-ok' : 'result-fail';
+      const label = r.skipped ? '–' : r.success ? '✓' : '✗';
+      return `<span class="result-chip ${cls}">${PLATFORM_ICONS[p] || p} ${label}</span>`;
+    }).join('');
+
+    return `
+      <div class="history-item">
+        ${a.imageUrl ? `<img class="history-thumb" src="${esc(a.imageUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
+        <div class="history-info">
+          <div class="history-title">
+            <a href="${esc(a.url)}" target="_blank">${esc(a.title)}</a>
+          </div>
+          <div class="history-meta">Posted ${timeAgo(a.postedAt || a.detectedAt)}</div>
+          <div class="history-results">${chips}</div>
+        </div>
+        <span class="badge badge-${a.status}">${a.status}</span>
+      </div>`;
+  }).join('');
+}
+
+// ─── Card interactions ────────────────────────────────────────────────────────
+function switchTab(encodedId, platform) {
+  const id = decodeURIComponent(encodedId);
+  activeTabs[id] = platform;
+  const card = document.querySelector(`[data-card="${encodedId}"]`);
+  if (!card) return;
+
+  card.querySelectorAll('.tab-btn').forEach((btn, i) => {
+    btn.classList.toggle('active', PLATFORMS[i] === platform);
+  });
+  card.querySelectorAll('[data-panel]').forEach(panel => {
+    panel.style.display = panel.dataset.panel === platform ? 'block' : 'none';
+  });
+}
+
+function onCaptionInput(encodedId, platform, textarea) {
+  const id = decodeURIComponent(encodedId);
+  const idx = pendingData.findIndex(a => a.id === id);
+  if (idx === -1) return;
+  if (!pendingData[idx].captions) pendingData[idx].captions = {};
+  pendingData[idx].captions[platform] = textarea.value;
+
+  const limit = CHAR_LIMITS[platform];
+  const ccEl = document.getElementById(`cc-${encodedId}-${platform}`);
+  if (ccEl) {
+    ccEl.textContent = `${textarea.value.length}/${limit}`;
+    ccEl.className = `char-count ${textarea.value.length > limit ? 'over' : ''}`;
+  }
+}
+
+function onPlatformToggle(encodedId, platform, checked) {
+  const id = decodeURIComponent(encodedId);
+  const idx = pendingData.findIndex(a => a.id === id);
+  if (idx === -1) return;
+  if (!pendingData[idx].platforms) pendingData[idx].platforms = {};
+  pendingData[idx].platforms[platform] = checked;
+}
+
+// ─── Actions ──────────────────────────────────────────────────────────────────
+async function approveArticle(encodedId) {
+  const id = decodeURIComponent(encodedId);
+  const idx = pendingData.findIndex(a => a.id === id);
+  if (idx === -1) return;
+
+  const btn = document.querySelector(`[data-card="${encodedId}"] .btn-success`);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Triggering...'; }
+
+  try {
+    pendingData[idx].status = 'approved';
+    pendingSha = await writeFile('data/pending.json', pendingData, pendingSha,
+      `feat: approve "${pendingData[idx].title}"`);
+
+    await dispatchWorkflow('post-social.yml', { article_id: id });
+    toast('Post approved — workflow started!', 'success');
+    renderPending();
+  } catch (err) {
+    toast(`Approve failed: ${err.message}`, 'error');
+    if (btn) { btn.disabled = false; btn.textContent = '✓ Approve & Post'; }
+  }
+}
+
+async function discardArticle(encodedId) {
+  const id = decodeURIComponent(encodedId);
+  if (!confirm('Discard this article? It will be removed from the queue.')) return;
+
+  try {
+    pendingData = pendingData.filter(a => a.id !== id);
+    pendingSha = await writeFile('data/pending.json', pendingData, pendingSha, 'feat: discard article');
+    toast('Article discarded.', 'info');
+    renderPending();
+  } catch (err) {
+    toast(`Discard failed: ${err.message}`, 'error');
+  }
+}
+
+// ─── Schedule ─────────────────────────────────────────────────────────────────
+function openScheduleModal(encodedId) {
+  scheduleTargetId = decodeURIComponent(encodedId);
+  const article = pendingData.find(a => a.id === scheduleTargetId);
+  const input = document.getElementById('schedule-input');
+  if (article?.scheduledAt) {
+    // Pre-fill with existing schedule (convert to local ISO for datetime-local input)
+    const d = new Date(article.scheduledAt);
+    input.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  } else {
+    // Default: 1 hour from now
+    const d = new Date(Date.now() + 3600000);
+    input.value = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+  }
+  document.getElementById('schedule-modal').classList.add('open');
+}
+
+function closeScheduleModal() {
+  document.getElementById('schedule-modal').classList.remove('open');
+  scheduleTargetId = null;
+}
+
+async function confirmSchedule() {
+  if (!scheduleTargetId) return;
+  const input = document.getElementById('schedule-input');
+  if (!input.value) { toast('Please select a date and time.', 'error'); return; }
+
+  const scheduledAt = new Date(input.value).toISOString();
+  const idx = pendingData.findIndex(a => a.id === scheduleTargetId);
+  if (idx === -1) { closeScheduleModal(); return; }
+
+  try {
+    pendingData[idx].scheduledAt = scheduledAt;
+    pendingData[idx].status = 'scheduled';
+    pendingSha = await writeFile('data/pending.json', pendingData, pendingSha,
+      `feat: schedule "${pendingData[idx].title}"`);
+    toast(`Scheduled for ${formatDateTime(scheduledAt)}`, 'success');
+    closeScheduleModal();
+    renderPending();
+  } catch (err) {
+    toast(`Schedule failed: ${err.message}`, 'error');
+  }
+}
+
+// Close modal on overlay click
+document.getElementById('schedule-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeScheduleModal();
+});
+
+// ─── Auto-post toggle ─────────────────────────────────────────────────────────
+async function toggleAutoPost() {
+  const newVal = !configData.autoPost;
+  try {
+    configData.autoPost = newVal;
+    configSha = await writeFile('data/config.json', configData, configSha,
+      `chore: set auto-post to ${newVal}`);
+    toast(`Auto-post turned ${newVal ? 'ON' : 'OFF'}`, 'success');
+    updateStatusBar();
+  } catch (err) {
+    configData.autoPost = !newVal; // revert
+    toast(`Failed to save: ${err.message}`, 'error');
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function escId(id) {
+  return encodeURIComponent(id);
+}
+function capitalize(s) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+function timeAgo(iso) {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  const hours = Math.floor(mins / 60);
+  const days = Math.floor(hours / 24);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  if (hours < 24) return `${hours}h ago`;
+  return `${days}d ago`;
+}
+function formatDateTime(iso) {
+  return new Date(iso).toLocaleString([], { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function toast(msg, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 4000);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+loadAll();
+
+// Auto-refresh every 30 seconds when tab is visible
+let autoRefreshTimer;
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    clearInterval(autoRefreshTimer);
+  } else {
+    autoRefreshTimer = setInterval(loadAll, 30000);
+  }
+});
+autoRefreshTimer = setInterval(loadAll, 30000);
+</script>
+</body>
+</html>
