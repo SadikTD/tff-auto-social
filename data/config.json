@@ -1,5 +1,5 @@
 {
-  "autoPost": true,
+  "autoPost": false,
   "platforms": {
     "twitter": true,
     "facebook": true,
